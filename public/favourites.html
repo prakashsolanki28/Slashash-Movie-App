@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favourite Movies and TV Shows</title>
+    <link href="./assets/bootstrap/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-dark">
+    <div class="container mt-5">
+        <div class="title">
+            <h3 class="text-white fw-bold display-3">My Movies App</h3>
+        </div>
+        <nav class="navbar navbar-expand-lg border-bottom mb-4">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="./index.html">Home</a>
+                </li>
+                <li class="nav-item ">
+                    <a class="nav-link" href="./favourites.html">Favourites</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" target="_blank" href="https://prakashsolanki.me">Contact</a>
+                </li>
+            </ul>
+        </nav>
+        <p class="text-muted">Favourite Movies and TV Shows</p>
+        <div id="favourites" class="mt-5 row">
+        </div>
+    </div>
+
+    <script>
+        async function loadFavourites() {
+            const response = await fetch('/favourites');
+            const data = await response.json();
+            const favourites = document.getElementById('favourites');
+            favourites.innerHTML = '';
+
+            if (data.length === 0) {
+                favourites.innerHTML = '<p class="text-white">No favourites added yet</p><p class="text-white">Search for a movie or TV show and click on the heart icon to add it to favourites</p><a href="./index.html" class="btn btn-danger">Search Movies</a>';
+                return;
+            }
+
+            data.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'col-12 col-md-4 mb-3';
+                card.innerHTML = `
+                    <div class="card bg-dark text-white border-white">
+                        <div class="row g-0">
+                            <div class="col-md-4">
+                                <img src="${item.poster}" class="img-fluid rounded-start w-100" alt="${item.title}">
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card-body">
+                                    <h5 class="card-title">${item.title}</h5>
+                                    <p class="card-text"><small class="text-muted">${item.year} - ${item.type}</small></p>
+                                    <button delete_id="${item.id}" class="btn btn-danger delete-btn">Delete</button>    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                favourites.appendChild(card);
+            });
+
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', async () => {
+                    const deleteId = button.getAttribute('delete_id');
+                    const confirmed = confirm('Are you sure you want to delete this favourite?');
+
+                    if (confirmed) {
+                        try {
+                            const deleteResponse = await fetch(`/favourites/${deleteId}`, {
+                                method: 'DELETE'
+                            });
+
+                            if (deleteResponse.ok) {
+                                loadFavourites();
+                            } else {
+                                console.error('Failed to delete favourite');
+                            }
+                        } catch (error) {
+                            console.error('Error deleting favourite:', error);
+                        }
+                    }
+                });
+            });
+
+        }
+
+        document.addEventListener('DOMContentLoaded', loadFavourites);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Movies</title>
+    <link href="./assets/bootstrap/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-dark">
+
+    <div class="container mt-5">
+        <div class="title">
+            <h3 class="text-white fw-bold display-3">My Movies App</h3>
+        </div>
+        <nav class="navbar navbar-expand-lg border-bottom mb-4">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" href="./index.html">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="./favourites.html">Favourites</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" target="_blank" href="https://prakashsolanki.me">Contact</a>
+                </li>
+            </ul>
+        </nav>
+        <form id="searchForm">
+            <p class="text-white">Search for a Movie or TV Show</p>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control form-control-lg" id="query" placeholder="Search...">
+                <button class="btn btn-danger btn-lg">Search</button>
+            </div>
+        </form>
+        <div id="results" class="mt-5 row"></div>
+    </div>
+
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+            const results = document.getElementById('results');
+            results.innerHTML = '<p class="text-white">Loading... Please wait</p>';
+            const query = document.getElementById('query').value;
+            const response = await fetch(`/search?q=${query}`);
+            const data = await response.json();
+            if (data.Search) {
+                results.innerHTML = '';
+                data.Search.forEach(item => {
+                    if (item.poster != 'N/A') {
+                        const colDiv = document.createElement('div');
+                        colDiv.classList.add('col-xl-3', 'col-md-3', 'col-sm-3', 'col-6', 'mb-4');
+                        const card = document.createElement('div');
+                        card.classList.add('card', 'h-100');
+                        const imgSrc = item.Poster === 'N/A' ? 'https://via.placeholder.com/300x450' : item.Poster;
+                        card.innerHTML = `
+                        <img src="${imgSrc}" class="card-img-top" alt="${item.Title}">
+                        <div class="card-body">
+                            <h5 class="card-title">${item.Title}</h5>
+                            <p class="card-text">${item.Year} - ${item.Type}</p>
+                            <button class="btn btn-primary favourite-btn" data-title="${item.Title}" data-year="${item.Year}" data-type="${item.Type}" data-poster="${item.Poster}">Favourite</button>
+                        </div>
+                    `;
+                        colDiv.appendChild(card);
+                        results.appendChild(colDiv);
+                    }
+                });
+
+                document.querySelectorAll('.favourite-btn').forEach(button => {
+                    button.addEventListener('click', async function () {
+                        const title = this.getAttribute('data-title');
+                        const year = this.getAttribute('data-year');
+                        const type = this.getAttribute('data-type');
+                        const poster = this.getAttribute('data-poster');
+
+                        const response = await fetch('/favourite', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ title, year, type, poster })
+                        });
+
+                        if (response.ok) {
+                            alert('Added to favourites');
+                        }
+                    });
+                });
+            } else {
+                results.innerHTML = '<p>No results found</p>';
+            }
+        });
+    </script>
+</body>
+
+</html>
