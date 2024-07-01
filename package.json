@@ -3,8 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "homepage": "https://prakashsolanki28.github.io/Slashash-Movie-App",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "keywords": [],
   "author": "",
@@ -15,5 +18,8 @@
     "express": "^4.19.2",
     "mysql": "^2.18.1",
     "open": "^10.1.0"
+  },
+  "devDependencies": {
+    "gh-pages": "^6.1.1"
   }
 }
